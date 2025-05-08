@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
-import PropTypes from 'prop-types';
 
 function Card({ className, ...props }: React.ComponentProps<'div'>) {
   return (
@@ -15,10 +14,6 @@ function Card({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-Card.propTypes = {
-  className: PropTypes.string,
-};
-
 function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -28,10 +23,6 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
     />
   );
 }
-
-CardHeader.propTypes = {
-  className: PropTypes.string,
-};
 
 function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
@@ -46,10 +37,6 @@ function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-CardTitle.propTypes = {
-  className: PropTypes.string,
-};
-
 function CardDescription({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -59,10 +46,6 @@ function CardDescription({ className, ...props }: React.ComponentProps<'div'>) {
     />
   );
 }
-
-CardDescription.propTypes = {
-  className: PropTypes.string,
-};
 
 function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
@@ -74,10 +57,6 @@ function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-CardContent.propTypes = {
-  className: PropTypes.string,
-};
-
 function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -87,10 +66,6 @@ function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
     />
   );
 }
-
-CardFooter.propTypes = {
-  className: PropTypes.string,
-};
 
 export {
   Card,
