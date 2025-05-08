@@ -1,5 +1,5 @@
 import './index.css';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { useState } from 'react';
 import { Input } from './components/ui/input';
 import { Token } from './components/ui/token';
@@ -65,7 +65,7 @@ export function App() {
 
     // Update inputAsTokens to include the new token
     setInputAsTokenIndices((oldInputAsTokenIndices) => {
-      let newInputAsTokenIndices: number[] = [];
+      const newInputAsTokenIndices: number[] = [];
       for (let i = 0; i < oldInputAsTokenIndices.length; i++) {
         const tokenIndexA = oldInputAsTokenIndices[i];
         const tokenIndexB = oldInputAsTokenIndices[i + 1];
