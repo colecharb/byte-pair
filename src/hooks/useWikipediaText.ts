@@ -1,14 +1,19 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 
 const useWikipediaText = () => {
-  const [wikiText, setWikiText] = useState<string>('');
+  const [text, setText] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // New state variable to track loading status
   const hasFetched = useRef(false); // Track if the fetch has occurred
 
   const fetchRandomArticle = useCallback(async () => {
-    const { extract } = await (
-      await fetch(`https://en.wikipedia.org/api/rest_v1/page/random/summary`)
-    ).json();
-    setWikiText(extract);
+    setIsLoading(true); // Set loading to true before fetch
+    const response = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/random/summary`,
+    );
+    const data = await response.json();
+    const { extract } = data;
+    setText(extract);
+    setIsLoading(false); // Set loading to false after fetch
   }, []);
 
   useEffect(() => {
@@ -18,7 +23,7 @@ const useWikipediaText = () => {
     }
   }, [fetchRandomArticle]);
 
-  return { wikiText, refetch: fetchRandomArticle };
+  return { text, isLoading, refetch: fetchRandomArticle };
 };
 
 export { useWikipediaText };
