@@ -82,10 +82,10 @@ export function App() {
   };
 
   return (
-    <div className='container w-full p-8 text-center relative z-10'>
-      <Card className='bg-card backdrop-blur-sm border-muted'>
+    <div className='w-full mt-10 px-4 md:px-8 lg:px-16 xl:px-24 text-center relative z-10'>
+      <Card className='flex flex-col bg-card backdrop-blur-sm border-muted w-full max-w-[1500px] mx-auto'>
         <Button
-          className='absolute top-0 right-0 m-2'
+          className='absolute top-2 right-2'
           variant='ghost'
           size='icon'
           onClick={() => setIsDark(!isDark)}
@@ -96,9 +96,10 @@ export function App() {
           <CardTitle>Byte Pair Encoding</CardTitle>
         </CardHeader>
         <CardContent className='flex flex-col pt-6 gap-4'>
-          <div className='flex gap-4'>
+          <div className='flex flex-col lg:flex-row gap-4'>
             <div className='flex flex-col flex-1 gap-2 justify-start align-start flex-wrap'>
               <Input
+                autoResize
                 className='h-75'
                 placeholder='Add some text as a basis for your vocabulary.'
                 defaultValue={defaultInput}
