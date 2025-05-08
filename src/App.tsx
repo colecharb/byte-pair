@@ -6,13 +6,7 @@ import { Token } from './components/ui/token';
 import { Button } from './components/ui/button';
 import { Moon, Sun } from 'lucide-react';
 import { useIsDark } from './hooks/useIsDark';
-
-const defaultInput =
-  "Hi! I like making things. \
-I'm a developer and designer with a background in pure math and an obsession with constantly learning and improving my skills. \
-Developing intuitive and appealing user experiences is what I'm all about. \
-Check out the projects tab for examples of my work and feel free to contact me if you're interested in working together. \
-I'm always excited to take on new challenges.";
+import defaultInput from './constants/defaultInput';
 
 export function App() {
   const [isDark, setIsDark] = useIsDark();
@@ -29,9 +23,12 @@ export function App() {
 
   const onChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
+    const newTokens = Array.from(new Set(text));
     setInput(text);
-    setTokens(Array.from(new Set(text)));
-    setInputAsTokenIndices(text.split('').map((char) => tokens.indexOf(char)));
+    setTokens(newTokens);
+    setInputAsTokenIndices(
+      text.split('').map((char) => newTokens.indexOf(char)),
+    );
   };
 
   const onClickAddToken = () => {
@@ -87,25 +84,22 @@ export function App() {
   return (
     <div className='container w-full p-8 text-center relative z-10'>
       <Card className='bg-card backdrop-blur-sm border-muted'>
+        <Button
+          className='absolute top-0 right-0 m-2'
+          variant='ghost'
+          size='icon'
+          onClick={() => setIsDark(!isDark)}
+        >
+          {isDark ? <Sun className='h-5 w-5' /> : <Moon className='h-5 w-5' />}
+        </Button>
         <CardHeader className='flex flex-row justify-center items-center'>
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={() => setIsDark(!isDark)}
-          >
-            {isDark ? (
-              <Sun className='h-5 w-5' />
-            ) : (
-              <Moon className='h-5 w-5' />
-            )}
-          </Button>
           <CardTitle>Byte Pair Encoding</CardTitle>
         </CardHeader>
         <CardContent className='flex flex-col pt-6 gap-4'>
           <div className='flex gap-4'>
-            <div className='flex flex-col flex-2 gap-2 justify-start align-start flex-wrap'>
+            <div className='flex flex-col flex-1 gap-2 justify-start align-start flex-wrap'>
               <Input
-                className='resize-none h-50'
+                className='h-75'
                 placeholder='Add some text as a basis for your vocabulary.'
                 defaultValue={defaultInput}
                 onChange={onChangeInput}
@@ -129,7 +123,7 @@ export function App() {
 
             <div className='flex flex-col flex-2 gap-2 justify-start align-start flex-wrap'>
               <h3 className='text-left text-sm font-medium'>Input as tokens</h3>
-              <div className='flex flex-wrap gap-2'>
+              <div className='flex flex-wrap'>
                 {inputAsTokenIndices.map((tokenIndex, index) => (
                   <Token
                     key={`${index}-${tokens[tokenIndex]}`}
