@@ -4,30 +4,45 @@ import { useEffect, useState } from 'react';
 import { Input } from './components/ui/input';
 import { Token } from './components/ui/token';
 import { Button } from './components/ui/button';
-import { Moon, Sun } from 'lucide-react';
+import { Loader, LoaderCircle, LoaderPinwheel, Moon, Sun } from 'lucide-react';
 import { useIsDark } from './hooks/useIsDark';
 import { useWikipediaText } from './hooks/useWikipediaText';
 
 export function App() {
   const [isDark, setIsDark] = useIsDark();
 
-  const { wikiText, refetch } = useWikipediaText();
+  const {
+    text: wikiText,
+    isLoading,
+    refetch: refetchWikiText,
+  } = useWikipediaText();
+
+  const [input, setInput] = useState<string>('');
 
   const [tokens, setTokens] = useState<string[]>([]);
   const [inputAsTokenIndices, setInputAsTokenIndices] = useState<number[]>([]);
 
+  const [hoveredTokenIndex, setHoveredTokenIndex] = useState<number | null>(
+    null,
+  );
+  const [selectedTokenIndex, setSelectedTokenIndex] = useState<number | null>(
+    null,
+  );
+
   useEffect(() => {
-    const newTokens = Array.from(new Set(wikiText));
-    setTokens(newTokens);
-    setInputAsTokenIndices(
-      wikiText.split('').map((char) => newTokens.indexOf(char)),
-    );
+    if (!wikiText) {
+      return;
+    }
+    changeText(wikiText);
   }, [wikiText]);
 
-  const onChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value;
+  const changeText = (text: string) => {
+    setInput(text);
+    setSelectedTokenIndex(null);
+
     const newTokens = Array.from(new Set(text));
-    // setInput(text);
+
+    setInput(text);
     setTokens(newTokens);
     setInputAsTokenIndices(
       text.split('').map((char) => newTokens.indexOf(char)),
@@ -105,13 +120,20 @@ export function App() {
         <CardContent className='flex flex-col pt-6 gap-4'>
           <div className='flex flex-col lg:flex-row gap-4'>
             <div className='flex flex-col flex-1 gap-3 justify-start align-start flex-wrap'>
-              <h3 className='text-left text-lg font-medium'>Input</h3>
+              <h3 className='text-left text-lg font-medium'>Text</h3>
+              <Button
+                onClick={refetchWikiText}
+                disabled={isLoading}
+                variant='secondary'
+              >
+                {isLoading ? 'Loading...' : 'Random Text'}
+              </Button>
               <Input
                 // autoResize
                 className='h-85'
                 placeholder='Add some text as a basis for your vocabulary.'
-                defaultValue={wikiText}
-                onChange={onChangeInput}
+                value={input}
+                onChange={(e) => changeText(e.target.value)}
               />
             </div>
 
@@ -120,6 +142,7 @@ export function App() {
                 Token Vocabulary
               </h3>
               <Button
+                variant='secondary'
                 disabled={
                   inputAsTokenIndices.length === 0 ||
                   inputAsTokenIndices.length === 1
@@ -128,23 +151,37 @@ export function App() {
               >
                 Add Token
               </Button>
-              <div className='flex flex-wrap gap-2'>
-                {tokens.map((token) => (
-                  <Token
-                    key={token}
-                    token={token}
-                  />
+              <div className='flex flex-wrap gap-1'>
+                {tokens.map((token, index) => (
+                  <div
+                    onMouseEnter={() => setHoveredTokenIndex(index)}
+                    onMouseLeave={() => setHoveredTokenIndex(null)}
+                    onClick={() =>
+                      setSelectedTokenIndex((prev) =>
+                        index === prev ? null : index,
+                      )
+                    }
+                  >
+                    <Token
+                      token={token}
+                      hovered={index === hoveredTokenIndex}
+                      selected={index === selectedTokenIndex}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
 
             <div className='flex flex-col flex-2 gap-3 justify-start align-start flex-wrap'>
-              <h3 className='text-left text-lg font-medium'>Tokenized Input</h3>
+              <h3 className='text-left text-lg font-medium'>Tokenized Text</h3>
               <div className='flex flex-wrap'>
                 {inputAsTokenIndices.map((tokenIndex, index) => (
                   <Token
                     key={`${index}-${tokens[tokenIndex]}`}
                     token={tokens[tokenIndex]}
+                    hovered={tokenIndex === hoveredTokenIndex}
+                    selected={tokenIndex === selectedTokenIndex}
+                    className='rounded-sm px-1 py-0'
                   />
                 ))}
               </div>
