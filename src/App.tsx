@@ -1,30 +1,33 @@
 import './index.css';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Input } from './components/ui/input';
 import { Token } from './components/ui/token';
 import { Button } from './components/ui/button';
 import { Moon, Sun } from 'lucide-react';
 import { useIsDark } from './hooks/useIsDark';
-import defaultInput from './constants/defaultInput';
+import { useWikipediaText } from './hooks/useWikipediaText';
 
 export function App() {
   const [isDark, setIsDark] = useIsDark();
 
-  const [input, setInput] = useState(defaultInput);
-  const [tokens, setTokens] = useState<string[]>(
-    Array.from(new Set(defaultInput)),
-  );
-  const [inputAsTokenIndices, setInputAsTokenIndices] = useState<number[]>(
-    defaultInput.split('').map((char) => tokens.indexOf(char)),
-  );
+  const { wikiText, refetch } = useWikipediaText();
 
-  console.log(tokens, tokens.length, inputAsTokenIndices);
+  const [tokens, setTokens] = useState<string[]>([]);
+  const [inputAsTokenIndices, setInputAsTokenIndices] = useState<number[]>([]);
+
+  useEffect(() => {
+    const newTokens = Array.from(new Set(wikiText));
+    setTokens(newTokens);
+    setInputAsTokenIndices(
+      wikiText.split('').map((char) => newTokens.indexOf(char)),
+    );
+  }, [wikiText]);
 
   const onChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
     const newTokens = Array.from(new Set(text));
-    setInput(text);
+    // setInput(text);
     setTokens(newTokens);
     setInputAsTokenIndices(
       text.split('').map((char) => newTokens.indexOf(char)),
@@ -107,7 +110,7 @@ export function App() {
                 // autoResize
                 className='h-85'
                 placeholder='Add some text as a basis for your vocabulary.'
-                defaultValue={defaultInput}
+                defaultValue={wikiText}
                 onChange={onChangeInput}
               />
             </div>
