@@ -1,6 +1,6 @@
 import './index.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Input } from './components/ui/input';
 import { Token } from './components/ui/token';
 import { Button } from './components/ui/button';
@@ -32,6 +32,10 @@ export function App() {
   };
 
   const onClickAddToken = () => {
+    if (inputAsTokenIndices.length === 0) {
+      return;
+    }
+
     // Create a map to store pair counts
     const pairCounts = new Map<string, number>();
 
@@ -97,21 +101,30 @@ export function App() {
         </CardHeader>
         <CardContent className='flex flex-col pt-6 gap-4'>
           <div className='flex flex-col lg:flex-row gap-4'>
-            <div className='flex flex-col flex-1 gap-2 justify-start align-start flex-wrap'>
+            <div className='flex flex-col flex-1 gap-3 justify-start align-start flex-wrap'>
+              <h3 className='text-left text-lg font-medium'>Input</h3>
               <Input
-                autoResize
-                className='h-75'
+                // autoResize
+                className='h-85'
                 placeholder='Add some text as a basis for your vocabulary.'
                 defaultValue={defaultInput}
                 onChange={onChangeInput}
               />
-              <Button onClick={onClickAddToken}>Add Token</Button>
             </div>
 
-            <div className='flex flex-col flex-1 gap-2 justify-start align-start flex-wrap'>
-              <h3 className='text-left text-sm font-medium'>
+            <div className='flex flex-col flex-1 gap-3 justify-start align-start flex-wrap'>
+              <h3 className='text-left text-lg font-medium'>
                 Token Vocabulary
               </h3>
+              <Button
+                disabled={
+                  inputAsTokenIndices.length === 0 ||
+                  inputAsTokenIndices.length === 1
+                }
+                onClick={onClickAddToken}
+              >
+                Add Token
+              </Button>
               <div className='flex flex-wrap gap-2'>
                 {tokens.map((token) => (
                   <Token
@@ -122,8 +135,8 @@ export function App() {
               </div>
             </div>
 
-            <div className='flex flex-col flex-2 gap-2 justify-start align-start flex-wrap'>
-              <h3 className='text-left text-sm font-medium'>Input as tokens</h3>
+            <div className='flex flex-col flex-2 gap-3 justify-start align-start flex-wrap'>
+              <h3 className='text-left text-lg font-medium'>Tokenized Input</h3>
               <div className='flex flex-wrap'>
                 {inputAsTokenIndices.map((tokenIndex, index) => (
                   <Token
