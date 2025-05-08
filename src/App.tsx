@@ -4,9 +4,14 @@ import { useEffect, useState } from 'react';
 import { Input } from './components/ui/input';
 import { Token } from './components/ui/token';
 import { Button } from './components/ui/button';
-import { Loader, LoaderCircle, LoaderPinwheel, Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { useIsDark } from './hooks/useIsDark';
 import { useWikipediaText } from './hooks/useWikipediaText';
+
+/**
+ * Only these tokens are allowed to be merged
+ */
+const MERGEABLE = /^[a-zA-Z0-9']*$/;
 
 export function App() {
   const [isDark, setIsDark] = useIsDark();
@@ -49,7 +54,7 @@ export function App() {
     );
   };
 
-  const onClickAddToken = () => {
+  const addToken = () => {
     if (inputAsTokenIndices.length === 0) {
       return;
     }
@@ -59,20 +64,38 @@ export function App() {
 
     // Iterate through inputAsTokens to count adjacent pairs
     for (let i = 0; i < inputAsTokenIndices.length - 1; i++) {
-      const pair: string = `${inputAsTokenIndices[i]},${
-        inputAsTokenIndices[i + 1]
-      }`;
+      const tokenIndexOne = inputAsTokenIndices[i];
+      const tokenIndexTwo = inputAsTokenIndices[i + 1];
+
+      const tokenOne = tokens[tokenIndexOne];
+      const tokenTwo = tokens[tokenIndexTwo];
+
+      // Only merge MERGEABLE chars
+      if (!MERGEABLE.test(tokenOne)) {
+        continue;
+      }
+      if (!MERGEABLE.test(tokenTwo)) {
+        // IF second token is not mergeable, skip next iteration.
+        i++;
+        continue;
+      }
+
+      const pair: string = `${tokenIndexOne},${tokenIndexTwo}`;
       const currentCount = pairCounts.get(pair) || 0;
       pairCounts.set(pair, currentCount + 1);
     }
 
     // Find the pair with the highest count
-    const mostCommonPairCount = Array.from(pairCounts.entries()).reduce(
-      (a, b) => (a[1] > b[1] ? a : b),
-    );
+    const [mostCommonPair, highestCount] = Array.from(
+      pairCounts.entries(),
+    ).reduce((a, b) => (a[1] > b[1] ? a : b));
 
-    // Get the pair with the highest count
-    const mostCommonPair = mostCommonPairCount[0];
+    if (highestCount <= 1) {
+      console.log(
+        'No valid token pair occurs more than once; no token created.',
+      );
+      return;
+    }
     const mostCommonPairTokens = mostCommonPair.split(',').map(Number);
 
     // Create a new token from the most common pair
@@ -147,13 +170,14 @@ export function App() {
                   inputAsTokenIndices.length === 0 ||
                   inputAsTokenIndices.length === 1
                 }
-                onClick={onClickAddToken}
+                onClick={addToken}
               >
                 Add Token
               </Button>
               <div className='flex flex-wrap gap-1'>
                 {tokens.map((token, index) => (
                   <div
+                    key={token}
                     onMouseEnter={() => setHoveredTokenIndex(index)}
                     onMouseLeave={() => setHoveredTokenIndex(null)}
                     onClick={() =>
