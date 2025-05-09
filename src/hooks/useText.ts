@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 
-const useWikipediaText = () => {
+const useText = () => {
   const [text, setText] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true); // New state variable to track loading status
   const hasFetched = useRef(false); // Track if the fetch has occurred
@@ -26,4 +26,4 @@ const useWikipediaText = () => {
   return { text, isLoading, refetch: fetchRandomArticle };
 };
 
-export { useWikipediaText };
+export default useText;
