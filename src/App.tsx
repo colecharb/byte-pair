@@ -22,10 +22,10 @@ export function App() {
   const [input, setInput] = useState<string>('');
 
   const [tokens, setTokens] = useState<string[]>([]);
-  const [inputAsTokenIndices, setInputAsTokenIndices] = useState<number[]>([]);
+  const [tokenization, setTokenization] = useState<string[]>([]);
 
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [hoveredToken, setHoveredToken] = useState<string | null>(null);
+  const [selectedToken, setSelectedToken] = useState<string | null>(null);
 
   const [tokenizeRunning, setTokenizeRunning] = useState(false);
   const [tokenizationFinished, setTokenizationFinished] = useState(false);
@@ -44,22 +44,20 @@ export function App() {
 
   const changeText = (text: string) => {
     setInput(text);
-    setSelectedIndex(null);
+    setSelectedToken(null);
     setCount(0);
 
     const newTokens = Array.from(new Set(text));
 
     setInput(text);
     setTokens(newTokens);
-    setInputAsTokenIndices(
-      text.split('').map((char) => newTokens.indexOf(char)),
-    );
+    setTokenization(text.split(''));
   };
 
   const addToken = () => {
     setAddingToken(true);
 
-    if (inputAsTokenIndices.length < 2 || tokenizationFinished) {
+    if (tokenization.length < 2 || tokenizationFinished) {
       setAddingToken(false);
       return;
     }
@@ -68,12 +66,9 @@ export function App() {
     const pairCounts = new Map<string, number>();
 
     // Iterate through inputAsTokens to count adjacent pairs
-    for (let i = 0; i < inputAsTokenIndices.length - 1; i++) {
-      const tokenIndexOne = inputAsTokenIndices[i];
-      const tokenIndexTwo = inputAsTokenIndices[i + 1];
-
-      const tokenOne = tokens[tokenIndexOne];
-      const tokenTwo = tokens[tokenIndexTwo];
+    for (let i = 0; i < tokenization.length - 1; i++) {
+      const tokenOne = tokenization[i];
+      const tokenTwo = tokenization[i + 1];
 
       // Only merge MERGEABLE chars
       if (!MERGEABLE.test(tokenOne)) {
@@ -85,13 +80,14 @@ export function App() {
         continue;
       }
 
-      const pair: string = `${tokenIndexOne},${tokenIndexTwo}`;
-      const currentCount = pairCounts.get(pair) || 0;
-      pairCounts.set(pair, currentCount + 1);
+      const pair: [string, string] = [tokenOne, tokenTwo];
+      const pairString = JSON.stringify(pair);
+      const currentCount = pairCounts.get(pairString) || 0;
+      pairCounts.set(pairString, currentCount + 1);
     }
 
     // Find the pair with the highest count
-    const [mostCommonPair, highestCount] = Array.from(
+    const [mostCommonPairString, highestCount] = Array.from(
       pairCounts.entries(),
     ).reduce((a, b) => (a[1] > b[1] ? a : b));
 
@@ -104,33 +100,27 @@ export function App() {
       setAddingToken(false);
       return;
     }
-    const mostCommonPairTokens = mostCommonPair.split(',').map(Number);
-
     // Create a new token from the most common pair
-    const newToken =
-      tokens[mostCommonPairTokens[0]] + tokens[mostCommonPairTokens[1]];
+    const mostCommonPair = JSON.parse(mostCommonPairString) as [string, string];
+    const newToken = mostCommonPair.join('');
     setTokens((prev) => [...prev, newToken]);
-    const newTokenIndex = tokens.length;
 
     // Update inputAsTokens to include the new token
-    setInputAsTokenIndices((oldInputAsTokenIndices) => {
-      const newInputAsTokenIndices: number[] = [];
-      for (let i = 0; i < oldInputAsTokenIndices.length; i++) {
-        const tokenIndexA = oldInputAsTokenIndices[i];
-        const tokenIndexB = oldInputAsTokenIndices[i + 1];
-        if (
-          tokenIndexA === mostCommonPairTokens[0] &&
-          tokenIndexB === mostCommonPairTokens[1]
-        ) {
+    setTokenization((oldTokenization) => {
+      const newTokenization: string[] = [];
+      for (let i = 0; i < oldTokenization.length; i++) {
+        const tokenOne = oldTokenization[i];
+        const tokenTwo = oldTokenization[i + 1];
+        if (tokenOne === mostCommonPair[0] && tokenTwo === mostCommonPair[1]) {
           // If the pair is found, use the new token
-          // TODO: swap indexOf for tokens.length ?
-          newInputAsTokenIndices.push(newTokenIndex);
-          i++; // increase i to skip next index
+          newTokenization.push(newToken);
+          // increase i to skip next index (we replaced 2 tokens with 1 token)
+          i++;
           continue;
         }
-        newInputAsTokenIndices.push(tokenIndexA);
+        newTokenization.push(tokenOne);
       }
-      return newInputAsTokenIndices;
+      return newTokenization;
     });
 
     setAddingToken(false);
@@ -193,12 +183,12 @@ export function App() {
               </Button>
               <Input
                 // autoResize
-                className='flex-1'
+                className='h-85'
                 placeholder='Add some text as a basis for your vocabulary.'
                 value={input}
                 onChange={(e) => changeText(e.target.value)}
               />
-              {`${getByteSize(input)} bytes`}
+              <div className='mt-auto'>{`${getByteSize(input)} bytes`}</div>
             </div>
 
             <div className='flex flex-col flex-1 gap-3 justify-start align-start flex-wrap'>
@@ -226,44 +216,46 @@ export function App() {
                 {tokens.map((token, index) => (
                   <div
                     key={token}
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
+                    onMouseEnter={() => setHoveredToken(token)}
+                    onMouseLeave={() => setHoveredToken(null)}
                     onClick={() =>
-                      setSelectedIndex((prev) =>
-                        index === prev ? null : index,
+                      setSelectedToken((prev) =>
+                        token === prev ? null : token,
                       )
                     }
                   >
                     <Token
                       token={token}
-                      hovered={index === hoveredIndex}
-                      selected={index === selectedIndex}
+                      hovered={token === hoveredToken}
+                      selected={token === selectedToken}
                     />
                   </div>
                 ))}
               </div>
+              <div className='mt-auto'>{`~ ${getByteSize(
+                tokens.join(''),
+              )} bytes`}</div>
             </div>
 
             <div className='flex flex-col flex-2 gap-3 justify-start align-start flex-wrap'>
               <h3 className='text-left text-lg font-medium'>Tokenized Text</h3>
               <div className='flex flex-wrap gap-1'>
-                {inputAsTokenIndices.map((tokenIndex, index) => {
-                  const token = tokens[tokenIndex];
+                {tokenization.map((token, index) => {
                   return (
                     <div
-                      key={`${index}-${tokens[tokenIndex]}`}
-                      onMouseEnter={() => setHoveredIndex(tokenIndex)}
-                      onMouseLeave={() => setHoveredIndex(null)}
+                      key={`${index}-${token}`}
+                      onMouseEnter={() => setHoveredToken(token)}
+                      onMouseLeave={() => setHoveredToken(null)}
                       onClick={() =>
-                        setSelectedIndex((prev) =>
-                          index === prev ? null : tokenIndex,
+                        setSelectedToken((prevSelected) =>
+                          token === prevSelected ? null : token,
                         )
                       }
                     >
                       <Token
                         token={token}
-                        hovered={tokenIndex === hoveredIndex}
-                        selected={tokenIndex === selectedIndex}
+                        hovered={token === hoveredToken}
+                        selected={token === selectedToken}
                         className='rounded-sm px-1 py-0'
                       />
                     </div>
