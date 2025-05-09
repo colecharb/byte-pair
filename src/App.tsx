@@ -22,6 +22,7 @@ export function App() {
   const [input, setInput] = useState<string>('');
 
   const [tokens, setTokens] = useState<string[]>([]);
+  const tokensByteSize = getByteSize(tokens.join(''));
   const [tokenization, setTokenization] = useState<string[]>([]);
 
   const [hoveredToken, setHoveredToken] = useState<string | null>(null);
@@ -232,9 +233,7 @@ export function App() {
                   </div>
                 ))}
               </div>
-              <div className='mt-auto'>{`~ ${getByteSize(
-                tokens.join(''),
-              )} bytes`}</div>
+              <div className='mt-auto'>{`~ ${tokensByteSize} bytes`}</div>
             </div>
 
             <div className='flex flex-col flex-2 gap-3 justify-start align-start flex-wrap'>
@@ -262,6 +261,9 @@ export function App() {
                   );
                 })}
               </div>
+              <div className='mt-auto'>{`~ ${
+                tokensByteSize + tokenization.length
+              } bytes`}</div>
             </div>
           </div>
         </CardContent>
