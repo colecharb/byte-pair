@@ -24,12 +24,8 @@ export function App() {
   const [tokens, setTokens] = useState<string[]>([]);
   const [inputAsTokenIndices, setInputAsTokenIndices] = useState<number[]>([]);
 
-  const [hoveredTokenIndex, setHoveredTokenIndex] = useState<number | null>(
-    null,
-  );
-  const [selectedTokenIndex, setSelectedTokenIndex] = useState<number | null>(
-    null,
-  );
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const [tokenizeRunning, setTokenizeRunning] = useState(false);
   const [tokenizationFinished, setTokenizationFinished] = useState(false);
@@ -48,7 +44,7 @@ export function App() {
 
   const changeText = (text: string) => {
     setInput(text);
-    setSelectedTokenIndex(null);
+    setSelectedIndex(null);
     setCount(0);
 
     const newTokens = Array.from(new Set(text));
@@ -230,18 +226,18 @@ export function App() {
                 {tokens.map((token, index) => (
                   <div
                     key={token}
-                    onMouseEnter={() => setHoveredTokenIndex(index)}
-                    onMouseLeave={() => setHoveredTokenIndex(null)}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
                     onClick={() =>
-                      setSelectedTokenIndex((prev) =>
+                      setSelectedIndex((prev) =>
                         index === prev ? null : index,
                       )
                     }
                   >
                     <Token
                       token={token}
-                      hovered={index === hoveredTokenIndex}
-                      selected={index === selectedTokenIndex}
+                      hovered={index === hoveredIndex}
+                      selected={index === selectedIndex}
                     />
                   </div>
                 ))}
@@ -256,18 +252,18 @@ export function App() {
                   return (
                     <div
                       key={`${index}-${tokens[tokenIndex]}`}
-                      onMouseEnter={() => setHoveredTokenIndex(tokenIndex)}
-                      onMouseLeave={() => setHoveredTokenIndex(null)}
+                      onMouseEnter={() => setHoveredIndex(tokenIndex)}
+                      onMouseLeave={() => setHoveredIndex(null)}
                       onClick={() =>
-                        setSelectedTokenIndex((prev) =>
+                        setSelectedIndex((prev) =>
                           index === prev ? null : tokenIndex,
                         )
                       }
                     >
                       <Token
                         token={token}
-                        hovered={tokenIndex === hoveredTokenIndex}
-                        selected={tokenIndex === selectedTokenIndex}
+                        hovered={tokenIndex === hoveredIndex}
+                        selected={tokenIndex === selectedIndex}
                         className='rounded-sm px-1 py-0'
                       />
                     </div>
