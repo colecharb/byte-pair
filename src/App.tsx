@@ -20,10 +20,12 @@ export function App() {
   const { text: wikiText, isLoading, refetch: refetchWikiText } = useText();
 
   const [input, setInput] = useState<string>('');
+  const inputByteSize = getByteSize(input);
 
   const [tokens, setTokens] = useState<string[]>([]);
   const tokensByteSize = getByteSize(tokens.join(''));
   const [tokenization, setTokenization] = useState<string[]>([]);
+  const tokenizationByteSize = tokensByteSize + tokenization.length;
 
   const [hoveredToken, setHoveredToken] = useState<string | null>(null);
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
@@ -34,6 +36,19 @@ export function App() {
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout>();
   const [count, setCount] = useState(0);
   const [addingToken, setAddingToken] = useState(false);
+
+  /**
+   * When true, some tokens may be unused
+   * and could be removed with removeVestigialTokens()
+   */
+  const [tokensStale, setTokensStale] = useState(false);
+
+  const removeVestigialTokens = () => {
+    setTokens((prevTokens) =>
+      prevTokens.filter((token) => tokenization.includes(token)),
+    );
+    setTokensStale(false);
+  };
 
   useEffect(() => {
     if (!wikiText) {
@@ -52,7 +67,9 @@ export function App() {
 
     setInput(text);
     setTokens(newTokens);
+    setTokensStale(false);
     setTokenization(text.split(''));
+    setTokenizationFinished(false);
   };
 
   const addToken = () => {
@@ -105,6 +122,7 @@ export function App() {
     const mostCommonPair = JSON.parse(mostCommonPairString) as [string, string];
     const newToken = mostCommonPair.join('');
     setTokens((prev) => [...prev, newToken]);
+    setTokensStale(true);
 
     // Update inputAsTokens to include the new token
     setTokenization((oldTokenization) => {
@@ -123,7 +141,6 @@ export function App() {
       }
       return newTokenization;
     });
-
     setAddingToken(false);
   };
 
@@ -171,8 +188,8 @@ export function App() {
         <CardHeader className='flex flex-row justify-center items-center'>
           <CardTitle>Byte Pair Encoding</CardTitle>
         </CardHeader>
-        <CardContent className='flex flex-col pt-6 gap-4'>
-          <div className='flex flex-col lg:flex-row gap-4'>
+        <CardContent className='flex flex-col pt-6'>
+          <div className='flex flex-col lg:flex-row gap-6'>
             <div className='flex flex-col flex-1 gap-3 justify-start align-start flex-wrap'>
               <h3 className='text-left text-lg font-medium'>Text</h3>
               <Button
@@ -180,7 +197,7 @@ export function App() {
                 disabled={isLoading}
                 variant='secondary'
               >
-                {isLoading ? 'Loading...' : 'Random Text'}
+                {isLoading ? 'Loading...' : 'Randomize Text'}
               </Button>
               <Input
                 // autoResize
@@ -189,7 +206,7 @@ export function App() {
                 value={input}
                 onChange={(e) => changeText(e.target.value)}
               />
-              <div className='mt-auto'>{`${getByteSize(input)} bytes`}</div>
+              <div className='mt-auto'>{`${inputByteSize} bytes`}</div>
             </div>
 
             <div className='flex flex-col flex-1 gap-3 justify-start align-start flex-wrap'>
@@ -198,11 +215,18 @@ export function App() {
               </h3>
               <div className='flex gap-2'>
                 <Button
+                  variant='outline'
+                  onClick={removeVestigialTokens}
+                  disabled={!tokensStale}
+                >
+                  Remove Unused
+                </Button>
+                <Button
                   variant='secondary'
                   disabled={tokenizationFinished || tokenizeRunning}
                   onClick={addToken}
                 >
-                  Add Token
+                  Add One
                 </Button>
                 <Button
                   variant={tokenizeRunning ? 'default' : 'secondary'}
@@ -213,7 +237,7 @@ export function App() {
                 </Button>
               </div>
 
-              <div className='flex flex-wrap gap-1'>
+              <div className='flex flex-wrap justify-center gap-1'>
                 {tokens.map((token, index) => (
                   <div
                     key={token}
@@ -261,9 +285,10 @@ export function App() {
                   );
                 })}
               </div>
-              <div className='mt-auto'>{`~ ${
-                tokensByteSize + tokenization.length
-              } bytes`}</div>
+              <div className='mt-auto'>{`~ ${tokenizationByteSize} bytes (${(
+                (tokenizationByteSize * 100) /
+                inputByteSize
+              ).toFixed(0)}% original size)`}</div>
             </div>
           </div>
         </CardContent>
