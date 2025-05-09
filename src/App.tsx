@@ -175,8 +175,9 @@ export function App() {
   }, [count]);
 
   return (
-    <div className='w-full mt-10 px-4 md:px-8 lg:px-16 xl:px-24 text-center relative z-10'>
-      <Card className='flex flex-col bg-card backdrop-blur-sm border-muted w-full max-w-[1500px] mx-auto'>
+    <div className='flex flex-col mt-25 px-4 md:px-8 lg:px-16 xl:px-24 text-center relative z-10 gap-10'>
+      <CardTitle>Byte Pair Encoding</CardTitle>
+      <Card className='flex flex-col bg-card backdrop-blur-sm border-muted max-w-[1500px] mx-auto'>
         <Button
           className='absolute top-2 right-2'
           variant='ghost'
@@ -185,9 +186,6 @@ export function App() {
         >
           {isDark ? <Sun className='h-5 w-5' /> : <Moon className='h-5 w-5' />}
         </Button>
-        <CardHeader className='flex flex-row justify-center items-center'>
-          <CardTitle>Byte Pair Encoding</CardTitle>
-        </CardHeader>
         <CardContent className='flex flex-col pt-6'>
           <div className='flex flex-col lg:flex-row gap-6'>
             <div className='flex flex-col flex-1 gap-3 justify-start align-start flex-wrap'>
