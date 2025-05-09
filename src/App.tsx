@@ -6,7 +6,8 @@ import { Token } from './components/ui/token';
 import { Button } from './components/ui/button';
 import { Moon, Sun } from 'lucide-react';
 import { useIsDark } from './hooks/useIsDark';
-import { useWikipediaText } from './hooks/useWikipediaText';
+import useText from './hooks/useText';
+import getByteSize from './helpers/getByteSize';
 
 /**
  * Only these tokens are allowed to be merged
@@ -16,11 +17,7 @@ const MERGEABLE = /^[a-zA-Z0-9']*$/;
 export function App() {
   const [isDark, setIsDark] = useIsDark();
 
-  const {
-    text: wikiText,
-    isLoading,
-    refetch: refetchWikiText,
-  } = useWikipediaText();
+  const { text: wikiText, isLoading, refetch: refetchWikiText } = useText();
 
   const [input, setInput] = useState<string>('');
 
@@ -34,16 +31,25 @@ export function App() {
     null,
   );
 
+  const [tokenizeRunning, setTokenizeRunning] = useState(false);
+  const [tokenizationFinished, setTokenizationFinished] = useState(false);
+
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout>();
+  const [count, setCount] = useState(0);
+  const [addingToken, setAddingToken] = useState(false);
+
   useEffect(() => {
     if (!wikiText) {
       return;
     }
     changeText(wikiText);
+    setTokenizationFinished(false);
   }, [wikiText]);
 
   const changeText = (text: string) => {
     setInput(text);
     setSelectedTokenIndex(null);
+    setCount(0);
 
     const newTokens = Array.from(new Set(text));
 
@@ -55,7 +61,10 @@ export function App() {
   };
 
   const addToken = () => {
-    if (inputAsTokenIndices.length === 0) {
+    setAddingToken(true);
+
+    if (inputAsTokenIndices.length < 2 || tokenizationFinished) {
+      setAddingToken(false);
       return;
     }
 
@@ -92,8 +101,11 @@ export function App() {
 
     if (highestCount <= 1) {
       console.log(
-        'No valid token pair occurs more than once; no token created.',
+        'No valid token pair occurs more than once; no token created; tokenization finished.',
       );
+      setTokenizationFinished(true);
+      stopTokenizing();
+      setAddingToken(false);
       return;
     }
     const mostCommonPairTokens = mostCommonPair.split(',').map(Number);
@@ -124,7 +136,39 @@ export function App() {
       }
       return newInputAsTokenIndices;
     });
+
+    setAddingToken(false);
   };
+
+  const startTokenizing = () => {
+    const interval = setInterval(() => {
+      // Use the latest count value via the ref
+      setCount((prev) => prev + 1);
+    }, 10);
+    setIntervalId(interval);
+    setTokenizeRunning(true);
+  };
+
+  const stopTokenizing = () => {
+    clearInterval(intervalId);
+    setTokenizeRunning(false);
+  };
+
+  const onPressStartStop = () => {
+    if (!tokenizeRunning) {
+      startTokenizing();
+    } else {
+      stopTokenizing();
+    }
+  };
+
+  useEffect(() => {
+    // console.log('add token count:', count);
+    if (count < 1 || addingToken) {
+      return;
+    }
+    addToken();
+  }, [count]);
 
   return (
     <div className='w-full mt-10 px-4 md:px-8 lg:px-16 xl:px-24 text-center relative z-10'>
@@ -153,27 +197,35 @@ export function App() {
               </Button>
               <Input
                 // autoResize
-                className='h-85'
+                className='flex-1'
                 placeholder='Add some text as a basis for your vocabulary.'
                 value={input}
                 onChange={(e) => changeText(e.target.value)}
               />
+              {`${getByteSize(input)} bytes`}
             </div>
 
             <div className='flex flex-col flex-1 gap-3 justify-start align-start flex-wrap'>
               <h3 className='text-left text-lg font-medium'>
                 Token Vocabulary
               </h3>
-              <Button
-                variant='secondary'
-                disabled={
-                  inputAsTokenIndices.length === 0 ||
-                  inputAsTokenIndices.length === 1
-                }
-                onClick={addToken}
-              >
-                Add Token
-              </Button>
+              <div className='flex gap-2'>
+                <Button
+                  variant='secondary'
+                  disabled={tokenizationFinished || tokenizeRunning}
+                  onClick={addToken}
+                >
+                  Add Token
+                </Button>
+                <Button
+                  variant={tokenizeRunning ? 'default' : 'secondary'}
+                  disabled={tokenizationFinished}
+                  onClick={onPressStartStop}
+                >
+                  {tokenizeRunning ? 'Stop' : 'Start'}
+                </Button>
+              </div>
+
               <div className='flex flex-wrap gap-1'>
                 {tokens.map((token, index) => (
                   <div
@@ -198,16 +250,29 @@ export function App() {
 
             <div className='flex flex-col flex-2 gap-3 justify-start align-start flex-wrap'>
               <h3 className='text-left text-lg font-medium'>Tokenized Text</h3>
-              <div className='flex flex-wrap'>
-                {inputAsTokenIndices.map((tokenIndex, index) => (
-                  <Token
-                    key={`${index}-${tokens[tokenIndex]}`}
-                    token={tokens[tokenIndex]}
-                    hovered={tokenIndex === hoveredTokenIndex}
-                    selected={tokenIndex === selectedTokenIndex}
-                    className='rounded-sm px-1 py-0'
-                  />
-                ))}
+              <div className='flex flex-wrap gap-1'>
+                {inputAsTokenIndices.map((tokenIndex, index) => {
+                  const token = tokens[tokenIndex];
+                  return (
+                    <div
+                      key={`${index}-${tokens[tokenIndex]}`}
+                      onMouseEnter={() => setHoveredTokenIndex(tokenIndex)}
+                      onMouseLeave={() => setHoveredTokenIndex(null)}
+                      onClick={() =>
+                        setSelectedTokenIndex((prev) =>
+                          index === prev ? null : tokenIndex,
+                        )
+                      }
+                    >
+                      <Token
+                        token={token}
+                        hovered={tokenIndex === hoveredTokenIndex}
+                        selected={tokenIndex === selectedTokenIndex}
+                        className='rounded-sm px-1 py-0'
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
