@@ -175,9 +175,9 @@ export function App() {
   }, [count]);
 
   return (
-    <div className='flex flex-col mt-25 px-4 md:px-8 lg:px-16 xl:px-24 text-center relative z-10 gap-10'>
+    <div className='flex flex-col mt-25 px-0 sm:px-4 md:px-8 lg:px-16 xl:px-24 text-center relative z-10 gap-10'>
       <CardTitle>Byte Pair Encoding</CardTitle>
-      <Card className='flex flex-col bg-card backdrop-blur-sm border-muted max-w-[1500px] mx-auto'>
+      <Card className='flex flex-col bg-card backdrop-blur-sm border-0 sm:border-1 border-muted max-w-[1500px] mx-auto'>
         <Button
           className='absolute top-2 right-2'
           variant='ghost'
