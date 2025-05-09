@@ -18,7 +18,7 @@ function Token({
   return (
     <div
       className={cn(
-        'text-sm bg-muted rounded-md px-2 py-1',
+        'select-none text-sm bg-muted rounded-md px-2 py-1',
         className,
         hovered && hoverClass,
         selected && selectedClass,
