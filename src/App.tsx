@@ -18,6 +18,7 @@ const MERGEABLE =
 
 export function App() {
   const [isDark, setIsDark] = useIsDark();
+  const [allowMergeAny, setAllowMergeAny] = useState(false);
 
   const { text: wikiText, isLoading, refetch: refetchWikiText } = useText();
 
@@ -90,14 +91,16 @@ export function App() {
       const tokenOne = tokenization[i];
       const tokenTwo = tokenization[i + 1];
 
-      // Only merge MERGEABLE chars
-      if (!MERGEABLE.test(tokenOne)) {
-        continue;
-      }
-      if (!MERGEABLE.test(tokenTwo)) {
-        // IF second token is not mergeable, skip next iteration.
-        i++;
-        continue;
+      if (!allowMergeAny) {
+        // Only merge MERGEABLE chars
+        if (!MERGEABLE.test(tokenOne)) {
+          continue;
+        }
+        if (!MERGEABLE.test(tokenTwo)) {
+          // IF second token is not mergeable, skip next iteration.
+          i++;
+          continue;
+        }
       }
 
       const pair: [string, string] = [tokenOne, tokenTwo];
@@ -183,17 +186,25 @@ export function App() {
   }, [count]);
 
   return (
-    <div className='flex flex-col mt-25 px-0 sm:px-4 md:px-8 lg:px-16 xl:px-24 text-center relative z-10 gap-10'>
-      <CardTitle>Byte Pair Encoding</CardTitle>
-      <Card className='flex flex-col bg-card backdrop-blur-sm border-0 sm:border-1 border-muted max-w-[1500px] mx-auto'>
+    <div className='flex flex-col pt-10 px-0 sm:px-4 md:px-8 lg:px-16 xl:px-24 text-center items-center relative z-10 gap-5'>
+      <CardTitle className='mb-5'>Byte Pair Encoding</CardTitle>
+      <div className='flex gap-3'>
         <Button
-          className='absolute top-2 right-2'
+          // className='absolute top-2 right-2'
           variant='ghost'
           size='icon'
-          onClick={() => setIsDark(!isDark)}
+          onClick={() => setIsDark((prev) => !prev)}
         >
           {isDark ? <Sun className='h-5 w-5' /> : <Moon className='h-5 w-5' />}
         </Button>
+        <Button
+          variant={allowMergeAny ? 'default' : 'outline'}
+          onClick={() => setAllowMergeAny((prev) => !prev)}
+        >
+          allow any merge
+        </Button>
+      </div>
+      <Card className='flex flex-col bg-card backdrop-blur-sm border-0 sm:pt-0 sm:border-1 border-muted max-w-[1500px] mx-auto'>
         <CardContent className='flex flex-col pt-6'>
           <div className='flex flex-col lg:flex-row gap-6'>
             <div className='flex flex-col flex-1 gap-3 justify-start align-start flex-wrap'>
