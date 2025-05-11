@@ -11,8 +11,10 @@ import getByteSize from './helpers/getByteSize';
 
 /**
  * Only these tokens are allowed to be merged
+ * uses unicode character categories \p{<category>}
  */
-const MERGEABLE = /^[a-zA-Z0-9']*$/;
+const MERGEABLE =
+  /^[\p{Letter}\p{Number}\p{Connector_Punctuation}\p{Dash_Punctuation}']*$/u;
 
 export function App() {
   const [isDark, setIsDark] = useIsDark();
@@ -104,18 +106,24 @@ export function App() {
       pairCounts.set(pairString, currentCount + 1);
     }
 
-    // Find the pair with the highest count
-    const [mostCommonPairString, highestCount] = Array.from(
-      pairCounts.entries(),
-    ).reduce((a, b) => (a[1] > b[1] ? a : b));
-
-    if (highestCount <= 1) {
-      console.log(
-        'No valid token pair occurs more than once; no token created; tokenization finished.',
-      );
+    const haltTokenization = () => {
       setTokenizationFinished(true);
       stopTokenizing();
       setAddingToken(false);
+    };
+
+    if (pairCounts.size === 0) {
+      haltTokenization();
+      return;
+    }
+
+    // Find the pair with the highest count
+    const [mostCommonPairString, highestCount] = Array.from(
+      pairCounts.entries(),
+    )?.reduce((a, b) => (a[1] > b[1] ? a : b));
+
+    if (highestCount < 2) {
+      haltTokenization();
       return;
     }
     // Create a new token from the most common pair
