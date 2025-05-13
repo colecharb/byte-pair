@@ -1,5 +1,5 @@
 import './index.css';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
+import { Card, CardContent, CardTitle } from './components/ui/card';
 import { useEffect, useState } from 'react';
 import { Input } from './components/ui/input';
 import { Token } from './components/ui/token';
@@ -8,10 +8,12 @@ import { Moon, Sun } from 'lucide-react';
 import { useIsDark } from './hooks/useIsDark';
 import useText from './hooks/useText';
 import getByteSize from './helpers/getByteSize';
+import { Switch } from './components/ui/switch';
 
 /**
- * Only these tokens are allowed to be merged
- * uses unicode character categories \p{<category>}
+ * Only these tokens are allowed to be merged.
+ *
+ * Uses unicode character categories `\p{Category}`
  */
 const MERGEABLE =
   /^[\p{Letter}\p{Number}\p{Connector_Punctuation}\p{Dash_Punctuation}']*$/u;
@@ -37,7 +39,8 @@ export function App() {
   const [tokenizationFinished, setTokenizationFinished] = useState(false);
 
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout>();
-  const [count, setCount] = useState(0);
+  // this count is what initiates each call to addToken() via useEffect
+  const [mergedTokenCount, setMergedTokenCount] = useState(0);
   const [addingToken, setAddingToken] = useState(false);
 
   /**
@@ -61,18 +64,26 @@ export function App() {
     setTokenizationFinished(false);
   }, [wikiText]);
 
+  useEffect(() => {
+    /**
+     * Reset tokens and tokenization
+     * when input or tokenization settings change
+     */
+    const newTokens = Array.from(new Set(input));
+    setTokens(newTokens);
+    setTokensStale(false);
+    setTokenization(input.split(''));
+    setTokenizationFinished(false);
+  }, [input, allowMergeAny]);
+
   const changeText = (text: string) => {
     setInput(text);
     setSelectedToken(null);
-    setCount(0);
+    setMergedTokenCount(0);
+  };
 
-    const newTokens = Array.from(new Set(text));
-
-    setInput(text);
-    setTokens(newTokens);
-    setTokensStale(false);
-    setTokenization(text.split(''));
-    setTokenizationFinished(false);
+  const onSwitchMergeAny = () => {
+    setAllowMergeAny((prev) => !prev);
   };
 
   const addToken = () => {
@@ -158,7 +169,7 @@ export function App() {
   const startTokenizing = () => {
     const interval = setInterval(() => {
       // Use the latest count value via the ref
-      setCount((prev) => prev + 1);
+      setMergedTokenCount((prev) => prev + 1);
     }, 10);
     setIntervalId(interval);
     setTokenizeRunning(true);
@@ -179,16 +190,16 @@ export function App() {
 
   useEffect(() => {
     // console.log('add token count:', count);
-    if (count < 1 || addingToken) {
+    if (mergedTokenCount < 1 || addingToken) {
       return;
     }
     addToken();
-  }, [count]);
+  }, [mergedTokenCount]);
 
   return (
     <div className='flex flex-col pt-10 px-0 sm:px-4 md:px-8 lg:px-16 xl:px-24 text-center items-center relative z-10 gap-5'>
       <CardTitle className='mb-5'>Byte Pair Encoding</CardTitle>
-      <div className='flex gap-3'>
+      <div className='flex gap-3 items-center'>
         <Button
           // className='absolute top-2 right-2'
           variant='ghost'
@@ -197,16 +208,10 @@ export function App() {
         >
           {isDark ? <Sun className='h-5 w-5' /> : <Moon className='h-5 w-5' />}
         </Button>
-        <Button
-          variant={allowMergeAny ? 'default' : 'outline'}
-          onClick={() => setAllowMergeAny((prev) => !prev)}
-        >
-          allow any merge
-        </Button>
       </div>
       <Card className='flex flex-col bg-card backdrop-blur-sm border-0 sm:pt-0 sm:border-1 border-muted max-w-[1500px] mx-auto'>
         <CardContent className='flex flex-col pt-6'>
-          <div className='flex flex-col lg:flex-row gap-6'>
+          <div className='flex flex-col lg:flex-row lg:flex-1 gap-6'>
             <div className='flex flex-col flex-1 gap-3 justify-start align-start flex-wrap'>
               <h3 className='text-left text-lg font-medium'>Text</h3>
               <Button
@@ -230,6 +235,13 @@ export function App() {
               <h3 className='text-left text-lg font-medium'>
                 Token Vocabulary
               </h3>
+              <div className='flex gap-2'>
+                <Switch
+                  checked={allowMergeAny}
+                  onCheckedChange={onSwitchMergeAny}
+                />
+                <span className='text-muted-foreground'>allow any merge</span>
+              </div>
               <div className='flex gap-2'>
                 <Button
                   variant='outline'
