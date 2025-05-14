@@ -235,13 +235,21 @@ export function App() {
                 Token Vocabulary
               </h3>
               <div className='flex gap-2'>
-                <span className='text-muted-foreground'>LLM-style</span>
+                <span
+                  className='text-muted-foreground'
+                  title='Tokens are created only from letters, numbers, connection punctuation and dashes.'
+                >
+                  LLM-style
+                </span>
                 <Switch
                   checked={allowMergeAny}
                   onCheckedChange={onSwitchMergeAny}
                 />
-                <span className='text-muted-foreground'>
-                  Merge any character
+                <span
+                  className='text-muted-foreground'
+                  title='Tokens are created from all characters.'
+                >
+                  Compression-style
                 </span>
               </div>
               <div className='flex gap-2'>
