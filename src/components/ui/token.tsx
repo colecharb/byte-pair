@@ -13,7 +13,7 @@ function Token({
   className?: ClassNameValue;
 }) {
   const hoverClass = 'bg-gray-500';
-  const selectedClass = 'bg-primary';
+  const selectedClass = 'outline-2 outline-primary';
 
   return (
     <div
