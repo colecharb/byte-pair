@@ -198,17 +198,16 @@ export function App() {
 
   return (
     <div className='flex flex-col pt-10 px-0 sm:px-4 md:px-8 lg:px-16 xl:px-24 text-center items-center relative z-10 gap-5'>
-      <CardTitle className='mb-5'>Byte Pair Encoding</CardTitle>
-      <div className='flex gap-3 items-center'>
-        <Button
-          // className='absolute top-2 right-2'
-          variant='ghost'
-          size='icon'
-          onClick={() => setIsDark((prev) => !prev)}
-        >
-          {isDark ? <Sun className='h-5 w-5' /> : <Moon className='h-5 w-5' />}
-        </Button>
-      </div>
+      <Button
+        className='absolute top-2 right-2'
+        variant='ghost'
+        size='icon'
+        onClick={() => setIsDark((prev) => !prev)}
+      >
+        {isDark ? <Sun className='h-5 w-5' /> : <Moon className='h-5 w-5' />}
+      </Button>
+      <CardTitle>Byte Pair Encoding</CardTitle>
+      <div className='flex gap-3 items-center'></div>
       <Card className='flex flex-col bg-card backdrop-blur-sm border-0 sm:pt-0 sm:border-1 border-muted max-w-[1500px] mx-auto'>
         <CardContent className='flex flex-col pt-6'>
           <div className='flex flex-col lg:flex-row lg:flex-1 gap-6'>
@@ -236,11 +235,14 @@ export function App() {
                 Token Vocabulary
               </h3>
               <div className='flex gap-2'>
+                <span className='text-muted-foreground'>LLM-style</span>
                 <Switch
                   checked={allowMergeAny}
                   onCheckedChange={onSwitchMergeAny}
                 />
-                <span className='text-muted-foreground'>allow any merge</span>
+                <span className='text-muted-foreground'>
+                  Merge any character
+                </span>
               </div>
               <div className='flex gap-2'>
                 <Button
