@@ -237,9 +237,9 @@ export function App() {
               <div className='flex gap-2'>
                 <span
                   className='text-muted-foreground'
-                  title='Tokens are created only from letters, numbers, connection punctuation and dashes.'
+                  title='Tokens are created only from letters, numbers, connecting punctuation and dashes.'
                 >
-                  LLM-style
+                  LLM tokens
                 </span>
                 <Switch
                   checked={allowMergeAny}
@@ -249,7 +249,7 @@ export function App() {
                   className='text-muted-foreground'
                   title='Tokens are created from all characters.'
                 >
-                  Compression-style
+                  Compression
                 </span>
               </div>
               <div className='flex gap-2'>
