@@ -197,7 +197,7 @@ export function App() {
   }, [mergedTokenCount]);
 
   return (
-    <div className='flex flex-col pt-10 px-0 sm:px-4 md:px-8 lg:px-16 xl:px-24 text-center items-center relative z-10 gap-5'>
+    <div className='flex flex-col p-10 px-0 sm:px-4 md:px-8 lg:px-16 xl:px-24 text-center items-center relative z-10 gap-5'>
       <Button
         className='absolute top-2 right-2'
         variant='ghost'
@@ -332,6 +332,18 @@ export function App() {
           </div>
         </CardContent>
       </Card>
+
+      <div className='text-muted-foreground'>
+        Made by{' '}
+        <a
+          className='hover:underline'
+          href='https://colecharb.com'
+          rel='noopener noreferrer'
+          target='_blank'
+        >
+          Cole Charbonneau
+        </a>
+      </div>
     </div>
   );
 }
